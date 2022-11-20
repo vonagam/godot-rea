@@ -1,0 +1,77 @@
+[gd_scene load_steps=7 format=3 uid="uid://drblsiu1s6kfg"]
+
+[ext_resource type="Script" path="res://checks/Component.gd" id="1_l6rqe"]
+[ext_resource type="Script" path="res://checks/CheckType.gd" id="2_mkrmn"]
+[ext_resource type="Script" path="res://checks/CheckScene.gd" id="3_2iqh2"]
+[ext_resource type="Script" path="res://checks/CheckContext.gd" id="4_7d6gt"]
+[ext_resource type="Script" path="res://checks/CheckState.gd" id="5_40r1c"]
+[ext_resource type="Script" path="res://checks/CheckApply.gd" id="6_5i56b"]
+
+[node name="check" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="component" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.25
+anchor_bottom = 0.25
+script = ExtResource("1_l6rqe")
+default_color = Color(0.211765, 0.682353, 0.792157, 1)
+
+[node name="label" type="Label" parent="component"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Component"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="check_type" type="Control" parent="."]
+layout_mode = 1
+anchor_left = 0.25
+anchor_right = 0.5
+anchor_bottom = 0.25
+script = ExtResource("2_mkrmn")
+
+[node name="check_scene" type="Control" parent="."]
+layout_mode = 1
+anchor_left = 0.5
+anchor_right = 0.75
+anchor_bottom = 0.25
+script = ExtResource("3_2iqh2")
+metadata/_edit_use_anchors_ = true
+
+[node name="check_context" type="Control" parent="."]
+layout_mode = 1
+anchor_left = 0.75
+anchor_right = 1.0
+anchor_bottom = 0.25
+script = ExtResource("4_7d6gt")
+metadata/_edit_use_anchors_ = true
+
+[node name="check_state" type="Control" parent="."]
+layout_mode = 1
+anchor_top = 0.25
+anchor_right = 0.25
+anchor_bottom = 0.5
+script = ExtResource("5_40r1c")
+metadata/_edit_use_anchors_ = true
+
+[node name="check_apply" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.25
+anchor_top = 0.25
+anchor_right = 0.5
+anchor_bottom = 0.5
+color = Color(0.6, 0.509804, 0.27451, 1)
+script = ExtResource("6_5i56b")
+metadata/_edit_use_anchors_ = true
