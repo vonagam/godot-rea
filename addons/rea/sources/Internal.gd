@@ -412,7 +412,7 @@ class NodedElement extends RenderElement:
   func _init( node: Node, is_rendered: bool, parent: Element, is_portal: bool ) -> void:
     super( parent, is_portal )
     self.node = node
-    self.nodes = [ node ] if node != null && ! is_portal else EMPTY_NODE_ARRAY
+    self.nodes = [ node ] as Array[ Node ] if node != null && ! is_portal else EMPTY_NODE_ARRAY
     if is_rendered && node != null:
       var render_root: RenderRoot = REA.render_roots[ node ]
       assert( render_root.element == null, 'Cannot use rea component render from multiple places.' )
