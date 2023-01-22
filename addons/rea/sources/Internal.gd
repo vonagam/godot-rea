@@ -442,17 +442,19 @@ class NodedElement extends RenderElement:
     for key in next_props:
       var next_prop: Variant = next_props[ key ]
       if utils.is_ignore( next_prop ): continue
-      if left_props.has( key ):
-        var prev_prop: Variant = left_props[ key ]
-        left_props.erase( key )
-        if ! utils.is_equal( next_prop, prev_prop ):
-          set_prop( key, next_prop )
-      else:
-        undo_props[ key ] = get_prop( key )
+      var node_prop := get_prop( key )
+      if ! undo_props.has( key ):
+        undo_props[ key ] = node_prop
+      if ! utils.is_equal( next_prop, node_prop ):
         set_prop( key, next_prop )
+      if ! left_props.is_empty():
+        left_props.erase( key )
     for key in left_props:
       if utils.is_ignore( left_props[ key ] ): continue
-      set_prop( key, undo_props[ key ] )
+      var node_prop := get_prop( key )
+      var undo_prop: Variant = self.undo_props[ key ]
+      if ! utils.is_equal( undo_prop, node_prop ):
+        set_prop( key, undo_prop )
       undo_props.erase( key )
 
   func remove_props() -> void:
