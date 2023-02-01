@@ -1,4 +1,4 @@
-class_name rea
+class_name rea extends 'Utils.gd'
 
 
 const Descriptor := preload( 'Internal.gd' ).Descriptor
@@ -19,10 +19,6 @@ const CallableDescriptor := preload( 'Internal.gd' ).CallableDescriptor
 const FragmentDescriptor := preload( 'Internal.gd' ).FragmentDescriptor
 const ContextDescriptor := preload( 'Internal.gd' ).ContextDescriptor
 
-const ignore := preload( 'Internal.gd' ).IGNORE
-const noop := preload( 'Internal.gd' ).NOOP
-
-const utils := preload( 'Internal.gd' ).utils
 const component := preload( 'Internal.gd' ).component
 const use := preload( 'Hooks.gd' ).use
 
@@ -60,7 +56,7 @@ static func apply( element: NodeElement, descriptor: NodeDescriptor ) -> NodeEle
     return null
 
   if element != null:
-    if utils.is_equal( element.descriptor._key, descriptor._key ) && element.descriptor._is_compatible( descriptor ):
+    if is_same( element.descriptor._key, descriptor._key ) && element.descriptor._is_compatible( descriptor ):
       element.update_descriptor( descriptor )
       return element
     element._removed()

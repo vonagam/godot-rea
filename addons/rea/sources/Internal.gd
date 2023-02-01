@@ -3,23 +3,16 @@ extends Node
 
 # Common
 
+const utils := preload( 'Utils.gd' )
+
 const EMPTY_DICTIONARY: Dictionary = {}
 const EMPTY_ARRAY: Array = []
 const EMPTY_INT_ARRAY: Array[ int ] = []
 const EMPTY_CALLABLE_ARRAY: Array[ Callable ] = []
 const EMPTY_NODE_ARRAY: Array[ Node ] = []
-const NOOP: Callable = Callable()
-const IGNORE: Variant = &'__rea_ignore__'
+const NOOP: Callable = utils.noop
 const CHILDREN_KEY: Variant = &'__rea_children_key__'
 const PORTALS_KEY: Variant = &'__rea_portals_key__'
-
-
-class utils:
-  static func is_equal( a: Variant, b: Variant ) -> bool:
-    return typeof( a ) == typeof( b ) && a == b
-
-  static func is_ignore( value: Variant ) -> bool:
-    return typeof( value ) == TYPE_STRING_NAME && value == IGNORE
 
 
 # Base
@@ -112,7 +105,7 @@ class Collection extends Object:
     for next_index in next_descriptors.size():
       var next_descriptor := next_descriptors[ next_index ]
       if next_descriptor == null: continue
-      var next_key: Variant = next_descriptor._key
+      var next_key := next_descriptor._key
       var next_element: Element = null
       if next_key != null:
         assert( ! next_keys.has( next_key ), 'Cannot have elements with same key of "%s".' % next_key )
@@ -226,7 +219,7 @@ class PropedDescriptor extends ChildedDescriptor:
     self._signals.merge( signals, true )
 
   func _add_signal( key: StringName, callable: Callable ) -> void:
-    if callable == NOOP && ! self._signals.has( key ): return
+    if callable.is_null() && ! self._signals.has( key ): return
     if ! self._owns_signals: self._signals = self._signals.duplicate(); self._owns_signals = true
     self._signals[ key ] = callable
 
@@ -440,25 +433,29 @@ class NodedElement extends RenderElement:
     var undo_props := self.undo_props
     var left_props := prev_props.duplicate() if ! prev_props.is_empty() && ! next_props.is_empty() else prev_props
     for key in next_props:
-      var next_prop: Variant = next_props[ key ]
+      var next_prop := next_props[ key ] as Variant
       if utils.is_ignore( next_prop ): continue
       var node_prop := get_prop( key )
       if ! undo_props.has( key ):
         undo_props[ key ] = node_prop
-      if ! utils.is_equal( next_prop, node_prop ):
+      if ! is_same( next_prop, node_prop ):
         set_prop( key, next_prop )
       if ! left_props.is_empty():
         left_props.erase( key )
     for key in left_props:
       if utils.is_ignore( left_props[ key ] ): continue
       var node_prop := get_prop( key )
-      var undo_prop: Variant = self.undo_props[ key ]
-      if ! utils.is_equal( undo_prop, node_prop ):
+      var undo_prop := self.undo_props[ key ] as Variant
+      if ! is_same( undo_prop, node_prop ):
         set_prop( key, undo_prop )
       undo_props.erase( key )
 
   func remove_props() -> void:
-    for key in self.undo_props: set_prop( key, self.undo_props[ key ] )
+    for key in self.undo_props:
+      var undo_prop := self.undo_props[ key ] as Variant
+      var node_prop := get_prop( key )
+      if ! is_same( undo_prop, node_prop ):
+        set_prop( key, undo_prop )
     self.undo_props = EMPTY_DICTIONARY
 
   func update_signals( prev_descriptor: NodedDescriptor, next_descriptor: NodedDescriptor ) -> void:
@@ -468,26 +465,28 @@ class NodedElement extends RenderElement:
     var node := self.node
     var left_signals := prev_signals.duplicate() if ! prev_signals.is_empty() && ! next_signals.is_empty() else prev_signals
     for key in next_signals:
-      var next_func: Variant = next_signals[ key ]
-      if next_func == null: continue
+      var next_callback: Callable = next_signals[ key ]
+      if next_callback.is_null(): continue
       if left_signals.has( key ):
-        var prev_func: Variant = left_signals[ key ]
+        var prev_callback: Callable = left_signals[ key ]
         left_signals.erase( key )
-        if next_func != prev_func:
-          if prev_func != null: node.disconnect( key, prev_func )
-          if next_func != null: node.connect( key, next_func )
+        if next_callback != prev_callback:
+          if ! prev_callback.is_null(): node.disconnect( key, prev_callback )
+          if ! next_callback.is_null(): node.connect( key, next_callback )
       else:
-        if next_func != null: node.connect( key, next_func )
+        node.connect( key, next_callback )
     for key in left_signals:
-      var prev_func: Variant = left_signals[ key ]
-      if prev_func != null: node.disconnect( key, prev_func )
+      var prev_callback: Callable = left_signals[ key ]
+      if ! prev_callback.is_null(): node.disconnect( key, prev_callback )
 
   func remove_signals() -> void:
     var node := self.node
     var descriptor: NodedDescriptor = self.descriptor
     if descriptor == null: return
     var signals := descriptor._signals
-    for key in signals: node.disconnect( key, signals[ key ] )
+    for key in signals:
+      var callback: Callable = signals[ key ]
+      if ! callback.is_null(): node.disconnect( key, callback )
 
   func update_nodes( prev_descriptor: NodedDescriptor, next_descriptor: NodedDescriptor ) -> void:
     var prev_hollow := prev_descriptor._is_hollow if prev_descriptor != null else true
@@ -534,12 +533,12 @@ class NodedElement extends RenderElement:
     var prev_ref := prev_descriptor._ref if prev_descriptor != null else NOOP
     var next_ref := next_descriptor._ref if next_descriptor != null else NOOP
     if next_ref == prev_ref: return
-    if prev_ref != NOOP: prev_ref.call( null )
-    if next_ref != NOOP: next_ref.call( self.node )
+    if ! prev_ref.is_null(): prev_ref.call( null )
+    if ! next_ref.is_null(): next_ref.call( self.node )
 
   func remove_ref() -> void:
     var descriptor: NodedDescriptor = self.descriptor
-    if descriptor == null || descriptor._ref == NOOP: return
+    if descriptor == null || descriptor._ref.is_null(): return
     descriptor._ref.call( null )
 
   func update_render_portals( prev_descriptor: Descriptor, next_descriptor: Descriptor ) -> void:
@@ -978,7 +977,7 @@ class CallableElement extends RenderElement:
     if next_inner_descriptor == prev_inner_descriptor: return
     render.output = next_inner_descriptor
     if prev_inner_descriptor != null && next_inner_descriptor != null:
-      if utils.is_equal( next_inner_descriptor._key, prev_inner_descriptor._key ) && next_inner_descriptor._is_compatible( prev_inner_descriptor ):
+      if is_same( next_inner_descriptor._key, prev_inner_descriptor._key ) && next_inner_descriptor._is_compatible( prev_inner_descriptor ):
         var same_element := self.children.elements[ 0 ]
         same_element.update_descriptor( next_inner_descriptor )
         self.nodes = same_element.nodes
@@ -1057,7 +1056,7 @@ class FragmentElement extends ChildedElement:
     var child_offset := offsets[ child_index ]
     var prev_nodes := self.nodes
     var next_nodes := [] as Array[ Node ]
-    next_nodes.typed_assign(
+    next_nodes.assign(
       prev_nodes.slice( 0, child_offset ) +
       next_child_nodes +
       prev_nodes.slice( child_offset + prev_child_nodes.size() )
@@ -1114,10 +1113,10 @@ class ContextElement extends FragmentElement:
 
   func _descriptor_updated( descriptor: Descriptor ) -> void:
     var next_descriptor: ContextDescriptor = self.descriptor
-    var prev_value: Variant = self.context_value
-    var next_value: Variant = next_descriptor._value if ! utils.is_ignore( next_descriptor._value ) else self.context_fallback
+    var next_value: Variant = next_descriptor._value if ! utils.is_ignore( next_descriptor._value ) else self.context_fallback # godot#72512
+    var prev_value := self.context_value
     self.context_value = next_value
-    if utils.is_equal( next_value, prev_value ) || self.context_users.is_empty(): super( descriptor ); return
+    if is_same( next_value, prev_value ) || self.context_users.is_empty(): super( descriptor ); return
     var rerender_binds := [] as Array[ Callable ]
     for context_user in self.context_users:
       rerender_binds.push_back( context_user.rerender.bind( context_user.counter ) )

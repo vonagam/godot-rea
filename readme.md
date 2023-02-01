@@ -10,7 +10,7 @@ A React-like library for Godot 4.
 
 Includes components, virtual tree, fragments, contexts, portals, refs and hooks. 
 
-**The plugin does not work on master, waiting for a merge of [#69248](https://github.com/godotengine/godot/pull/69248) for typed array to be fixed.**
+**The plugin does not work on master, waiting for fix of hashes for typed arrays - [#72514](https://github.com/godotengine/godot/pull/72514).**
 
 ## Api
 
@@ -419,15 +419,7 @@ const noop: Callable
 
 Empty `Callable()`, nothing more.
 
-#### rea.utils.is_equal
-
-```gdscript
-func is_equal( a: Variant, b: Variant ) -> bool
-```
-
-Checks that two values are of the same type and equal.
-
-#### rea.utils.is_ignore
+#### rea.is_ignore
 
 ```gdscript
 func is_ignore( value: Variant ) -> bool

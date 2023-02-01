@@ -1,6 +1,5 @@
 # Common
 
-const utils := preload( 'Internal.gd' ).utils
 const Render := preload( 'Internal.gd' ).Render
 const ContextElement := preload( 'Internal.gd' ).ContextElement
 
@@ -28,14 +27,14 @@ class Effect:
   var deps: Array[ Variant ] = REA.EMPTY_ARRAY
 
   func update( update: Callable, deps: Array ) -> void:
-    if self.deps != deps: return
+    if ! is_same( self.deps, deps ): return
     var prev_cleanup := self.cleanup
-    if prev_cleanup != REA.NOOP: prev_cleanup.call()
+    if ! prev_cleanup.is_null(): prev_cleanup.call()
     var next_cleanup: Variant = update.call()
     self.cleanup = next_cleanup if next_cleanup is Callable else REA.NOOP
 
   func clean() -> void:
-    if self.cleanup != REA.NOOP: self.cleanup.call_deferred()
+    if ! self.cleanup.is_null(): self.cleanup.call_deferred()
 
 
 # Context
@@ -80,7 +79,7 @@ class use:
       var prev_state: State = render.data[ internals.data_index ]
       var prev_value: Variant = prev_state._rea_value
       if next_value is Callable: next_value = next_value.call( prev_value )
-      if utils.is_equal( next_value, prev_value ): return
+      if is_same( next_value, prev_value ): return
       var next_state := State.new()
       next_state._rea_internals = internals
       next_state._rea_value = next_value
@@ -119,9 +118,7 @@ class use:
 
     if is_mounted:
       var effect: Effect = render.data[ data_index ]
-      var prev_cleanup: Variant = effect.cleanup
-      var prev_deps := effect.deps
-      if deps != prev_deps:
+      if deps != effect.deps:
         effect.deps = deps
         effect.update.call_deferred( update, deps )
       return
@@ -176,7 +173,7 @@ class use:
       var prev_reducer: Reducer = render.data[ internals.data_index ]
       var prev_value: Variant = prev_reducer._rea_value
       var next_value: Variant = internals.reducer.call( prev_value, action )
-      if utils.is_equal( next_value, prev_value ): return
+      if is_same( next_value, prev_value ): return
       var next_reducer := Reducer.new()
       next_reducer._rea_internals = internals
       next_reducer._rea_value = next_value
@@ -200,7 +197,7 @@ class use:
 
     var result := Reducer.new()
     result._rea_internals = internals
-    result._rea_value = init.call( initial_value ) if init != REA.NOOP else initial_value
+    result._rea_value = init.call( initial_value ) if ! init.is_null() else initial_value
     Utils.push_data( render, data_index, result )
 
     return result

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://drblsiu1s6kfg"]
+[gd_scene load_steps=8 format=3 uid="uid://drblsiu1s6kfg"]
 
 [ext_resource type="Script" path="res://checks/Component.gd" id="1_l6rqe"]
 [ext_resource type="Script" path="res://checks/CheckType.gd" id="2_mkrmn"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://checks/CheckContext.gd" id="4_7d6gt"]
 [ext_resource type="Script" path="res://checks/CheckState.gd" id="5_40r1c"]
 [ext_resource type="Script" path="res://checks/CheckApply.gd" id="6_5i56b"]
+[ext_resource type="Script" path="res://checks/CheckInput.gd" id="7_83fcp"]
 
 [node name="check" type="Control"]
 layout_mode = 3
@@ -75,3 +76,30 @@ anchor_bottom = 0.5
 color = Color(0.6, 0.509804, 0.27451, 1)
 script = ExtResource("6_5i56b")
 metadata/_edit_use_anchors_ = true
+
+[node name="check_input" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.25
+anchor_right = 0.75
+anchor_bottom = 0.5
+color = Color(0.14902, 0.25098, 0.227451, 1)
+script = ExtResource("7_83fcp")
+metadata/_edit_use_anchors_ = true
+
+[node name="input" type="LineEdit" parent="check_input"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -106.0
+offset_top = -21.0
+offset_right = 106.0
+offset_bottom = 21.0
+grow_horizontal = 2
+grow_vertical = 2
+placeholder_text = "input placeholder"
+alignment = 1
