@@ -6,10 +6,10 @@ extends Node
 const utils := preload( 'Utils.gd' )
 
 const EMPTY_DICTIONARY: Dictionary = {}
-const EMPTY_ARRAY: Array = []
-const EMPTY_INT_ARRAY: Array[ int ] = []
-const EMPTY_CALLABLE_ARRAY: Array[ Callable ] = []
-const EMPTY_NODE_ARRAY: Array[ Node ] = []
+var EMPTY_ARRAY: Array = []
+var EMPTY_INT_ARRAY: Array[ int ] = []
+var EMPTY_CALLABLE_ARRAY: Array[ Callable ] = []
+var EMPTY_NODE_ARRAY: Array[ Node ] = []
 const NOOP: Callable = utils.noop
 const CHILDREN_KEY: Variant = &'__rea_children_key__'
 const PORTALS_KEY: Variant = &'__rea_portals_key__'
@@ -17,13 +17,13 @@ const PORTALS_KEY: Variant = &'__rea_portals_key__'
 
 # Base
 
-const EMPTY_DESCRIPTOR_ARRAY: Array[ Descriptor ] = []
-const EMPTY_ELEMENT_ARRAY: Array[ Element ] = []
+var EMPTY_DESCRIPTOR_ARRAY: Array[ Descriptor ] = []
+var EMPTY_ELEMENT_ARRAY: Array[ Element ] = []
 
 
 class Descriptor:
   var _key: Variant
-  var _portals: Array[ Descriptor ] = EMPTY_DESCRIPTOR_ARRAY
+  var _portals: Array[ Descriptor ] = REA.EMPTY_DESCRIPTOR_ARRAY
 
   func _is_compatible( other: Descriptor ) -> bool:
     return false
@@ -41,7 +41,7 @@ class Element:
   var is_portal: bool
   var parent: Element
   var index: int = -1
-  var nodes: Array[ Node ] = EMPTY_NODE_ARRAY
+  var nodes: Array[ Node ] = REA.EMPTY_NODE_ARRAY
   var portals: Collection = null
   var contexts: Dictionary = EMPTY_DICTIONARY
 
@@ -57,8 +57,8 @@ class Element:
     _descriptor_updated( prev_descriptor )
 
   func update_portals( prev_descriptor: Descriptor, next_descriptor: Descriptor ) -> void:
-    var prev_descriptors := prev_descriptor._portals if prev_descriptor != null else EMPTY_DESCRIPTOR_ARRAY
-    var next_descriptors := next_descriptor._portals if next_descriptor != null else EMPTY_DESCRIPTOR_ARRAY
+    var prev_descriptors := prev_descriptor._portals if prev_descriptor != null else REA.EMPTY_DESCRIPTOR_ARRAY
+    var next_descriptors := next_descriptor._portals if next_descriptor != null else REA.EMPTY_DESCRIPTOR_ARRAY
     if next_descriptors == prev_descriptors: return
     if self.portals == null: self.portals = Collection.new( self, true )
     self.portals.update( prev_descriptors, next_descriptors )
@@ -75,7 +75,7 @@ class Element:
   func remove_descriptor() -> void:
     self.descriptor = null
     self.parent = null
-    self.nodes = EMPTY_NODE_ARRAY
+    self.nodes = REA.EMPTY_NODE_ARRAY
     self.contexts = EMPTY_DICTIONARY
 
   func _removed() -> void:
@@ -86,7 +86,7 @@ class Element:
 class Collection extends Object:
   var parent: Element
   var is_portal: bool
-  var elements: Array[ Element ] = EMPTY_ELEMENT_ARRAY
+  var elements: Array[ Element ] = REA.EMPTY_ELEMENT_ARRAY
   var keys: Dictionary = EMPTY_DICTIONARY
 
   func _init( parent: Element, is_portal: bool ) -> void:
@@ -97,7 +97,7 @@ class Collection extends Object:
     var parent := self.parent
     var is_portal := self.is_portal
     var prev_elements := self.elements
-    var next_elements := ( [] as Array[ Element ] ) if ! next_descriptors.is_empty() else EMPTY_ELEMENT_ARRAY
+    var next_elements := ( [] as Array[ Element ] ) if ! next_descriptors.is_empty() else REA.EMPTY_ELEMENT_ARRAY
     var prev_keys := self.keys
     var next_keys := EMPTY_DICTIONARY
     var left_elements := ( prev_elements.duplicate() as Array[ Element ] ) if ! prev_elements.is_empty() && ! next_descriptors.is_empty() else prev_elements
@@ -143,12 +143,12 @@ class Collection extends Object:
 
 class ChildedDescriptor extends Descriptor:
   var _is_hollow: bool = true
-  var _children: Array[ Descriptor ] = EMPTY_DESCRIPTOR_ARRAY
+  var _children: Array[ Descriptor ] = REA.EMPTY_DESCRIPTOR_ARRAY
 
   func _set_hollow( is_hollow: bool ) -> void:
     if self._is_hollow == is_hollow: return
     self._is_hollow = is_hollow
-    if is_hollow: self._children = EMPTY_DESCRIPTOR_ARRAY
+    if is_hollow: self._children = REA.EMPTY_DESCRIPTOR_ARRAY
 
   func _set_children( children: Array[ Descriptor ] ) -> void:
     self._is_hollow = false
@@ -165,8 +165,8 @@ class ChildedElement extends Element:
   var children: Collection = null
 
   func update_children( prev_descriptor: ChildedDescriptor, next_descriptor: ChildedDescriptor ) -> void:
-    var prev_descriptors := prev_descriptor._children if prev_descriptor != null else EMPTY_DESCRIPTOR_ARRAY
-    var next_descriptors := next_descriptor._children if next_descriptor != null else EMPTY_DESCRIPTOR_ARRAY
+    var prev_descriptors := prev_descriptor._children if prev_descriptor != null else REA.EMPTY_DESCRIPTOR_ARRAY
+    var next_descriptors := next_descriptor._children if next_descriptor != null else REA.EMPTY_DESCRIPTOR_ARRAY
     if next_descriptors == prev_descriptors: return
     if self.children == null: self.children = Collection.new( self, false )
     self.children.update( prev_descriptors, next_descriptors )
@@ -270,8 +270,8 @@ class RenderElement extends ChildedElement:
 
 class Render:
   var element: RenderElement
-  var data: Array[ Variant ] = EMPTY_ARRAY
-  var cleanups: Array[ Callable ] = EMPTY_CALLABLE_ARRAY
+  var data: Array[ Variant ] = REA.EMPTY_ARRAY
+  var cleanups: Array[ Callable ] = REA.EMPTY_CALLABLE_ARRAY
   var counter: int = 0
   var output: Descriptor = null
 
@@ -288,8 +288,8 @@ class Render:
   func remove() -> void:
     self.element = null
     for cleanup in self.cleanups: cleanup.call()
-    self.cleanups = EMPTY_CALLABLE_ARRAY
-    self.data = EMPTY_ARRAY
+    self.cleanups = REA.EMPTY_CALLABLE_ARRAY
+    self.data = REA.EMPTY_ARRAY
     self.output = null
 
 
@@ -398,14 +398,14 @@ class NodedDescriptor extends RenderDescriptor:
 class NodedElement extends RenderElement:
   var node: Node
   var undo_props := {}
-  var offsets := EMPTY_INT_ARRAY
+  var offsets := REA.EMPTY_INT_ARRAY
   var render_callable: Callable = NOOP
   var render_portals: Collection = null
 
   func _init( node: Node, is_rendered: bool, parent: Element, is_portal: bool ) -> void:
     super( parent, is_portal )
     self.node = node
-    self.nodes = [ node ] as Array[ Node ] if node != null && ! is_portal else EMPTY_NODE_ARRAY
+    self.nodes = [ node ] as Array[ Node ] if node != null && ! is_portal else REA.EMPTY_NODE_ARRAY
     if is_rendered && node != null:
       var render_root: RenderRoot = REA.render_roots[ node ]
       assert( render_root.element == null, 'Cannot use rea component render from multiple places.' )
@@ -492,11 +492,11 @@ class NodedElement extends RenderElement:
     var prev_hollow := prev_descriptor._is_hollow if prev_descriptor != null else true
     var next_hollow := next_descriptor._is_hollow if next_descriptor != null else prev_hollow
     if next_hollow && prev_hollow: return
-    var prev_children := prev_descriptor._children if prev_descriptor != null else EMPTY_DESCRIPTOR_ARRAY
-    var next_children := next_descriptor._children if next_descriptor != null else EMPTY_DESCRIPTOR_ARRAY
+    var prev_children := prev_descriptor._children if prev_descriptor != null else REA.EMPTY_DESCRIPTOR_ARRAY
+    var next_children := next_descriptor._children if next_descriptor != null else REA.EMPTY_DESCRIPTOR_ARRAY
     if next_children == prev_children && next_hollow == prev_hollow: return
     var node := self.node
-    var children := self.children.elements if self.children != null else EMPTY_ELEMENT_ARRAY
+    var children := self.children.elements if self.children != null else REA.EMPTY_ELEMENT_ARRAY
     var offsets := [] as Array[ int ]
     var placing_sibling: Node = null
     var placing_index: int = 0
@@ -527,7 +527,7 @@ class NodedElement extends RenderElement:
     var descriptor: NodedDescriptor = self.descriptor
     if descriptor == null || descriptor._is_hollow: return
     for child in node.get_children(): node.remove_child( child )
-    self.offsets = EMPTY_INT_ARRAY
+    self.offsets = REA.EMPTY_INT_ARRAY
 
   func update_ref( prev_descriptor: NodedDescriptor, next_descriptor: NodedDescriptor ) -> void:
     var prev_ref := prev_descriptor._ref if prev_descriptor != null else NOOP
@@ -542,8 +542,8 @@ class NodedElement extends RenderElement:
     descriptor._ref.call( null )
 
   func update_render_portals( prev_descriptor: Descriptor, next_descriptor: Descriptor ) -> void:
-    var prev_descriptors := prev_descriptor._portals if prev_descriptor != null else EMPTY_DESCRIPTOR_ARRAY
-    var next_descriptors := next_descriptor._portals if next_descriptor != null else EMPTY_DESCRIPTOR_ARRAY
+    var prev_descriptors := prev_descriptor._portals if prev_descriptor != null else REA.EMPTY_DESCRIPTOR_ARRAY
+    var next_descriptors := next_descriptor._portals if next_descriptor != null else REA.EMPTY_DESCRIPTOR_ARRAY
     if next_descriptors == prev_descriptors: return
     if self.render_portals == null: self.render_portals = Collection.new( self, true )
     self.render_portals.update( prev_descriptors, next_descriptors )
@@ -856,7 +856,7 @@ class SceneElement extends NodedElement:
 
 class NodesDescriptor extends Descriptor:
   var _is_persistent: bool = false
-  var _nodes: Array[ Node ] = EMPTY_NODE_ARRAY
+  var _nodes: Array[ Node ] = REA.EMPTY_NODE_ARRAY
 
   func _is_compatible( other: Descriptor ) -> bool:
     return other is NodesDescriptor && (
@@ -985,8 +985,8 @@ class CallableElement extends RenderElement:
     if prev_inner_descriptor != null:
       var prev_element := self.children.elements[ 0 ]
       prev_element._removed()
-      self.children.elements = EMPTY_ELEMENT_ARRAY
-      self.nodes = EMPTY_NODE_ARRAY
+      self.children.elements = REA.EMPTY_ELEMENT_ARRAY
+      self.nodes = REA.EMPTY_NODE_ARRAY
     if next_inner_descriptor != null:
       if self.children == null: self.children = Collection.new( self, self.is_portal )
       var next_element := next_inner_descriptor._make_element( self, self.is_portal )
@@ -1020,19 +1020,19 @@ class FragmentDescriptor extends ChildedDescriptor:
 
 
 class FragmentElement extends ChildedElement:
-  var offsets: Array[ int ] = EMPTY_INT_ARRAY
+  var offsets: Array[ int ] = REA.EMPTY_INT_ARRAY
 
   func _init( parent: Element, is_portal: bool ) -> void:
     super( parent, is_portal )
     if is_portal: self.children = Collection.new( self, true )
 
   func update_nodes( prev_descriptor: ChildedDescriptor, next_descriptor: ChildedDescriptor ) -> void:
-    var prev_children := prev_descriptor._children if prev_descriptor != null else EMPTY_DESCRIPTOR_ARRAY
-    var next_children := next_descriptor._children if next_descriptor != null else EMPTY_DESCRIPTOR_ARRAY
+    var prev_children := prev_descriptor._children if prev_descriptor != null else REA.EMPTY_DESCRIPTOR_ARRAY
+    var next_children := next_descriptor._children if next_descriptor != null else REA.EMPTY_DESCRIPTOR_ARRAY
     if next_children == prev_children: return
     if self.children.elements.is_empty():
-      self.nodes = EMPTY_NODE_ARRAY
-      self.offsets = EMPTY_INT_ARRAY
+      self.nodes = REA.EMPTY_NODE_ARRAY
+      self.offsets = REA.EMPTY_INT_ARRAY
       return
     var next_nodes := [] as Array[ Node ]
     var next_offsets := [] as Array[ int ]

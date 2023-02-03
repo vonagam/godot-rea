@@ -10,8 +10,6 @@ A React-like library for Godot 4.
 
 Includes components, virtual tree, fragments, contexts, portals, refs and hooks. 
 
-**The plugin does not work on master, waiting for fix of hashes for typed arrays - [#72514](https://github.com/godotengine/godot/pull/72514).**
-
 ## Api
 
 Everything is exposed through global `rea` class. 
