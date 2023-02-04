@@ -14,7 +14,7 @@ Includes components, virtual tree, fragments, contexts, portals, refs and hooks.
 
 Everything is exposed through global `rea` class. 
 
-To install the addon you need to place `addons/rea` folder under the same name into your project addons folder.
+To install the addon you need to place `addons/rea` folder under the same name into your project addons folder and enable it in Project > Project Settings > Plugins.
 
 Rea tries to match React's api where it makes sense but deviates to addapt to Godot's nature. 
 
