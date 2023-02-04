@@ -29,12 +29,12 @@ class Effect:
   func update( update: Callable, deps: Array ) -> void:
     if ! is_same( self.deps, deps ): return
     var prev_cleanup := self.cleanup
-    if ! prev_cleanup.is_null(): prev_cleanup.call()
+    if prev_cleanup.is_valid(): prev_cleanup.call()
     var next_cleanup: Variant = update.call()
     self.cleanup = next_cleanup if next_cleanup is Callable else REA.NOOP
 
   func clean() -> void:
-    if ! self.cleanup.is_null(): self.cleanup.call_deferred()
+    if self.cleanup.is_valid(): self.cleanup.call_deferred()
 
 
 # Context
@@ -197,7 +197,7 @@ class use:
 
     var result := Reducer.new()
     result._rea_internals = internals
-    result._rea_value = init.call( initial_value ) if ! init.is_null() else initial_value
+    result._rea_value = init.call( initial_value ) if init.is_valid() else initial_value
     Utils.push_data( render, data_index, result )
 
     return result

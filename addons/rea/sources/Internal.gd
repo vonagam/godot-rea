@@ -219,7 +219,7 @@ class PropedDescriptor extends ChildedDescriptor:
     self._signals.merge( signals, true )
 
   func _add_signal( key: StringName, callable: Callable ) -> void:
-    if callable.is_null() && ! self._signals.has( key ): return
+    if ! callable.is_valid() && ! self._signals.has( key ): return
     if ! self._owns_signals: self._signals = self._signals.duplicate(); self._owns_signals = true
     self._signals[ key ] = callable
 
@@ -466,18 +466,18 @@ class NodedElement extends RenderElement:
     var left_signals := prev_signals.duplicate() if ! prev_signals.is_empty() && ! next_signals.is_empty() else prev_signals
     for key in next_signals:
       var next_callback: Callable = next_signals[ key ]
-      if next_callback.is_null(): continue
+      if ! next_callback.is_valid(): continue
       if left_signals.has( key ):
         var prev_callback: Callable = left_signals[ key ]
         left_signals.erase( key )
         if next_callback != prev_callback:
-          if ! prev_callback.is_null(): node.disconnect( key, prev_callback )
-          if ! next_callback.is_null(): node.connect( key, next_callback )
+          if prev_callback.is_valid(): node.disconnect( key, prev_callback )
+          if next_callback.is_valid(): node.connect( key, next_callback )
       else:
         node.connect( key, next_callback )
     for key in left_signals:
       var prev_callback: Callable = left_signals[ key ]
-      if ! prev_callback.is_null(): node.disconnect( key, prev_callback )
+      if prev_callback.is_valid(): node.disconnect( key, prev_callback )
 
   func remove_signals() -> void:
     var node := self.node
@@ -486,7 +486,7 @@ class NodedElement extends RenderElement:
     var signals := descriptor._signals
     for key in signals:
       var callback: Callable = signals[ key ]
-      if ! callback.is_null(): node.disconnect( key, callback )
+      if callback.is_valid(): node.disconnect( key, callback )
 
   func update_nodes( prev_descriptor: NodedDescriptor, next_descriptor: NodedDescriptor ) -> void:
     var prev_hollow := prev_descriptor._is_hollow if prev_descriptor != null else true
@@ -533,12 +533,12 @@ class NodedElement extends RenderElement:
     var prev_ref := prev_descriptor._ref if prev_descriptor != null else NOOP
     var next_ref := next_descriptor._ref if next_descriptor != null else NOOP
     if next_ref == prev_ref: return
-    if ! prev_ref.is_null(): prev_ref.call( null )
-    if ! next_ref.is_null(): next_ref.call( self.node )
+    if prev_ref.is_valid(): prev_ref.call( null )
+    if next_ref.is_valid(): next_ref.call( self.node )
 
   func remove_ref() -> void:
     var descriptor: NodedDescriptor = self.descriptor
-    if descriptor == null || descriptor._ref.is_null(): return
+    if descriptor == null || ! descriptor._ref.is_valid(): return
     descriptor._ref.call( null )
 
   func update_render_portals( prev_descriptor: Descriptor, next_descriptor: Descriptor ) -> void:
