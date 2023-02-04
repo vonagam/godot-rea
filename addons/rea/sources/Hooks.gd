@@ -13,13 +13,6 @@ class Utils:
     render.cleanups.push_back( cleanup )
 
 
-# State
-
-class StateInternals:
-  var render: Render
-  var data_index: int
-
-
 # Effect
 
 class Effect:
@@ -30,7 +23,7 @@ class Effect:
     if ! is_same( self.deps, deps ): return
     var prev_cleanup := self.cleanup
     if prev_cleanup.is_valid(): prev_cleanup.call()
-    var next_cleanup: Variant = update.call()
+    var next_cleanup := update.call()
     self.cleanup = next_cleanup if next_cleanup is Callable else REA.NOOP
 
   func clean() -> void:
@@ -43,14 +36,6 @@ class Contexted:
   var context: GDScript
   var element: ContextElement
   var fallback: Variant
-
-
-# Reducer
-
-class ReducerInternals:
-  var render: Render
-  var data_index: int
-  var reducer: Callable
 
 
 # Memo
@@ -67,24 +52,8 @@ class use:
   # State
 
   class State:
-    var value: Variant:
-      get: return _rea_value
-
-    var _rea_internals: Variant
-    var _rea_value: Variant
-
-    func update( next_value: Variant ) -> void:
-      var internals: StateInternals = self._rea_internals
-      var render := internals.render
-      var prev_state: State = render.data[ internals.data_index ]
-      var prev_value: Variant = prev_state._rea_value
-      if next_value is Callable: next_value = next_value.call( prev_value )
-      if is_same( next_value, prev_value ): return
-      var next_state := State.new()
-      next_state._rea_internals = internals
-      next_state._rea_value = next_value
-      render.data[ internals.data_index ] = next_state
-      render.rerender_deferred()
+    var value: Variant
+    var update: Callable
 
   static func state( initial_value: Variant ) -> State:
     var render := REA.render
@@ -96,13 +65,18 @@ class use:
       var state: State = render.data[ data_index ]
       return state
 
-    var internals := StateInternals.new()
-    internals.render = render
-    internals.data_index = data_index
-
     var state := State.new()
-    state._rea_internals = internals
-    state._rea_value = initial_value.call() if initial_value is Callable else initial_value
+    state.value = initial_value.call() if initial_value is Callable else initial_value
+    state.update = func( next_value: Variant ) -> void:
+      var prev_state: State = render.data[ data_index ]
+      var prev_value := prev_state.value
+      if next_value is Callable: next_value = next_value.call( prev_value )
+      if is_same( next_value, prev_value ): return
+      var next_state := State.new()
+      next_state.value = next_value
+      next_state.update = prev_state.update
+      render.data[ data_index ] = next_state
+      render.rerender_deferred()
     Utils.push_data( render, data_index, state )
 
     return state
@@ -161,24 +135,8 @@ class use:
   # Reducer
 
   class Reducer:
-    var value: Variant:
-      get: return _rea_value
-
-    var _rea_internals: Variant
-    var _rea_value: Variant
-
-    func update( action: Variant ) -> void:
-      var internals: ReducerInternals = self._rea_internals
-      var render := internals.render
-      var prev_reducer: Reducer = render.data[ internals.data_index ]
-      var prev_value: Variant = prev_reducer._rea_value
-      var next_value: Variant = internals.reducer.call( prev_value, action )
-      if is_same( next_value, prev_value ): return
-      var next_reducer := Reducer.new()
-      next_reducer._rea_internals = internals
-      next_reducer._rea_value = next_value
-      render.data[ internals.data_index ] = next_reducer
-      render.rerender_deferred()
+    var value: Variant
+    var update: Callable
 
   static func reducer( reducer: Callable, initial_value: Variant, init: Callable = REA.NOOP ) -> Reducer:
     var render := REA.render
@@ -190,14 +148,18 @@ class use:
       var result: Reducer = render.data[ data_index ]
       return result
 
-    var internals := ReducerInternals.new()
-    internals.render = render
-    internals.data_index = data_index
-    internals.reducer = reducer
-
     var result := Reducer.new()
-    result._rea_internals = internals
-    result._rea_value = init.call( initial_value ) if init.is_valid() else initial_value
+    result.value = init.call( initial_value ) if init.is_valid() else initial_value
+    result.update = func( action: Variant ) -> void:
+      var prev_reducer: Reducer = render.data[ data_index ]
+      var prev_value := prev_reducer.value
+      var next_value := reducer.call( prev_value, action )
+      if is_same( next_value, prev_value ): return
+      var next_reducer := Reducer.new()
+      next_reducer.value = next_value
+      next_reducer.update = prev_reducer.update
+      render.data[ data_index ] = next_reducer
+      render.rerender_deferred()
     Utils.push_data( render, data_index, result )
 
     return result

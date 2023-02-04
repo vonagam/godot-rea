@@ -5,7 +5,7 @@ func render( arg: rea.Arg ) -> rea.NodeDescriptor:
   var blue_state := rea.use.state( 0.0 )
 
   var on_input := rea.use.callback( func ( input: InputEvent ) -> void:
-    blue_state.update( func ( value: float ) -> float: return value * 0.5 + randf() * 0.5 )
+    blue_state.update.call( func ( value: float ) -> float: return value * 0.5 + randf() * 0.5 )
   )
 
   var ref_update := rea.use.callback( func ( control: Control ) -> void:

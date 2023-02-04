@@ -346,12 +346,16 @@ So comments here are mostly about differences from original ones.
 
 ```gdscript
 func state( initial_value: Variant ) -> rea.use.State
+
+class State extends RefCounted:
+  value: Variant
+  update: Callable # func( value: Variant ) -> void
 ```
 
 There is no destructuring or tuples in Godot so an object is returned.  
-It has read-only `value` property and `update` method, same in functionality as in React.  
+It has `value` property and `update` callable, same in functionality as in React.  
 This is not a reference, new state object will be created for each update.  
-`update` works the same even when called on an instance of an old state.
+`update` lifecylce is separate from the object, it works even after outdated state object is garbage collected.
 
 #### rea.use.effect
 
@@ -373,6 +377,10 @@ func context( context: GDScript ) -> Variant
 
 ```gdscript
 func reducer( reducer: Callable, initial_value: Variant, init: Callable = Callable() ) -> rea.use.Reducer
+
+class Reducer extends RefCounted:
+  value: Variant
+  update: Callable # func( action: Variant ) -> void
 ```
 
 Same as in `state` hook returns an object with `value` and `update`. 
