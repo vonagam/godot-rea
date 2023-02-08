@@ -21,9 +21,13 @@ REA="*res://addons/rea/sources/Internal.gd"
 
 [debug]
 
+gdscript/warnings/exclude_addons=false
 gdscript/warnings/shadowed_variable=0
+gdscript/warnings/unused_private_class_variable=0
 gdscript/warnings/unused_parameter=0
 gdscript/warnings/unused_signal=0
+gdscript/warnings/assert_always_false=0
+gdscript/warnings/inference_on_variant=0
 
 [editor_plugins]
 

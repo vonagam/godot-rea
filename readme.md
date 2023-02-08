@@ -246,6 +246,14 @@ func data( data: Variant )
 
 Sets any `data` on `rea.Arg`. For custom logic in render functions.
 
+##### rea.NodedDescriptor#nullable
+
+```gdscript
+func nullable( is_nullable: bool = true )
+```
+
+Allows silently skipping descriptors that describe optional nodes which are expected to be null in some cases.
+
 ##### rea.NodedDescriptor#rendered
 
 ```gdscript

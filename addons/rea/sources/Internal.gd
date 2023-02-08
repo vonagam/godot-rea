@@ -378,6 +378,7 @@ class RenderComponent extends Node:
 # Noded
 
 class NodedDescriptor extends RenderDescriptor:
+  var _is_nullable: bool = false
   var _is_rendered: bool = false
   var _is_persistent: bool = false
 
@@ -402,7 +403,8 @@ class NodedElement extends RenderElement:
   var render_callable: Callable = NOOP
   var render_portals: Collection = null
 
-  func _init( node: Node, is_rendered: bool, parent: Element, is_portal: bool ) -> void:
+  func _init( node: Node, is_nullable: bool, is_rendered: bool, parent: Element, is_portal: bool ) -> void:
+    assert( node != null || is_nullable, 'Cannot use null as a node in a non-nullable node descriptor.' )
     super( parent, is_portal )
     self.node = node
     self.nodes = [ node ] as Array[ Node ] if node != null && ! is_portal else REA.EMPTY_NODE_ARRAY
@@ -660,13 +662,14 @@ class NodeDescriptor extends NodedDescriptor:
   func _is_compatible( other: Descriptor ) -> bool:
     return other is NodeDescriptor && (
       other._node == self._node &&
+      other._is_nullable == self._is_nullable &&
       other._is_rendered == self._is_rendered &&
       other._is_persistent == self._is_persistent &&
       other._is_hollow == self._is_hollow
     )
 
   func _make_element( parent: Element, is_portal: bool ) -> Element:
-    return NodeElement.new( self._node, self._is_rendered, parent, is_portal )
+    return NodeElement.new( self._node, self._is_nullable, self._is_rendered, parent, is_portal )
 
   # common
   func tap( tap: Callable ) -> NodeDescriptor: tap.call( self ); return self
@@ -686,13 +689,14 @@ class NodeDescriptor extends NodedDescriptor:
   func ref( ref: Callable ) -> NodeDescriptor: _ref = ref; return self
   func data( data: Variant ) -> NodeDescriptor: _data = data; return self
   # noded
+  func nullable( is_nullable: bool = true ) -> NodeDescriptor: _is_nullable = is_nullable; return self
   func rendered( is_rendered: bool = true ) -> NodeDescriptor: _is_rendered = is_rendered; return self
   func persistent( is_persistent: bool = true ) -> NodeDescriptor: _is_persistent = is_persistent; return self
 
 
 class NodeElement extends NodedElement:
-  func _init( node: Node, is_rendered: bool, parent: Element, is_portal: bool ) -> void:
-    super( node, is_rendered, parent, is_portal )
+  func _init( node: Node, is_nullable: bool, is_rendered: bool, parent: Element, is_portal: bool ) -> void:
+    super( node, is_nullable, is_rendered, parent, is_portal )
 
 
 # Path
@@ -709,13 +713,14 @@ class PathDescriptor extends NodedDescriptor:
     return other is PathDescriptor && (
       other._path == self._path &&
       other._node == self._node &&
+      other._is_nullable == self._is_nullable &&
       other._is_rendered == self._is_rendered &&
       other._is_persistent == self._is_persistent &&
       other._is_hollow == self._is_hollow
     )
 
   func _make_element( parent: Element, is_portal: bool ) -> Element:
-    return PathElement.new( self._path, self._node, self._is_rendered, parent, is_portal )
+    return PathElement.new( self._path, self._node, self._is_nullable, self._is_rendered, parent, is_portal )
 
   # common
   func tap( tap: Callable ) -> PathDescriptor: tap.call( self ); return self
@@ -735,12 +740,13 @@ class PathDescriptor extends NodedDescriptor:
   func ref( ref: Callable ) -> PathDescriptor: _ref = ref; return self
   func data( data: Variant ) -> PathDescriptor: _data = data; return self
   # noded
+  func nullable( is_nullable: bool = true ) -> PathDescriptor: _is_nullable = is_nullable; return self
   func rendered( is_rendered: bool = true ) -> PathDescriptor: _is_rendered = is_rendered; return self
   func persistent( is_persistent: bool = true ) -> PathDescriptor: _is_persistent = is_persistent; return self
 
 
 class PathElement extends NodedElement:
-  func _init( path: NodePath, node: Node, is_rendered: bool, parent: Element, is_portal: bool ) -> void:
+  func _init( path: NodePath, node: Node, is_nullable: bool, is_rendered: bool, parent: Element, is_portal: bool ) -> void:
     if node == null:
       var element := parent
       while element != null:
@@ -749,7 +755,7 @@ class PathElement extends NodedElement:
     if node != null:
       node = node.get_node_or_null( path )
       if node == null: node = null # TODO: godot#62658
-    super( node, is_rendered, parent, is_portal )
+    super( node, is_nullable, is_rendered, parent, is_portal )
 
 
 # Type
@@ -766,13 +772,14 @@ class TypeDescriptor extends NodedDescriptor:
     return other is TypeDescriptor && (
       other._type == self._type &&
       other._script == self._script &&
+      other._is_nullable == self._is_nullable &&
       other._is_rendered == self._is_rendered &&
       other._is_persistent == self._is_persistent &&
       other._is_hollow == self._is_hollow
     )
 
   func _make_element( parent: Element, is_portal: bool ) -> Element:
-    return TypeElement.new( self._type, self._script, self._is_rendered, parent, is_portal )
+    return TypeElement.new( self._type, self._script, self._is_nullable, self._is_rendered, parent, is_portal )
 
   # common
   func tap( tap: Callable ) -> TypeDescriptor: tap.call( self ); return self
@@ -792,18 +799,19 @@ class TypeDescriptor extends NodedDescriptor:
   func ref( ref: Callable ) -> TypeDescriptor: _ref = ref; return self
   func data( data: Variant ) -> TypeDescriptor: _data = data; return self
   # noded
+  func nullable( is_nullable: bool = true ) -> TypeDescriptor: _is_nullable = is_nullable; return self
   func rendered( is_rendered: bool = true ) -> TypeDescriptor: _is_rendered = is_rendered; return self
   func persistent( is_persistent: bool = true ) -> TypeDescriptor: _is_persistent = is_persistent; return self
 
 
 class TypeElement extends NodedElement:
-  func _init( type: Variant, script: Script, is_rendered: bool, parent: Element, is_portal: bool ) -> void:
+  func _init( type: Variant, script: Script, is_nullable: bool, is_rendered: bool, parent: Element, is_portal: bool ) -> void:
     var node: Node = null
     if type != null:
       node = type.new()
       if script != null:
         node.set_script( script )
-    super( node, is_rendered, parent, is_portal )
+    super( node, is_nullable, is_rendered, parent, is_portal )
 
 
 # Scene
@@ -817,13 +825,14 @@ class SceneDescriptor extends NodedDescriptor:
   func _is_compatible( other: Descriptor ) -> bool:
     return other is SceneDescriptor && (
       other._scene == self._scene &&
+      other._is_nullable == self._is_nullable &&
       other._is_rendered == self._is_rendered &&
       other._is_persistent == self._is_persistent &&
       other._is_hollow == self._is_hollow
     )
 
   func _make_element( parent: Element, is_portal: bool ) -> Element:
-    return SceneElement.new( self._scene, self._is_rendered, parent, is_portal )
+    return SceneElement.new( self._scene, self._is_nullable, self._is_rendered, parent, is_portal )
 
   # common
   func tap( tap: Callable ) -> SceneDescriptor: tap.call( self ); return self
@@ -843,13 +852,14 @@ class SceneDescriptor extends NodedDescriptor:
   func ref( ref: Callable ) -> SceneDescriptor: _ref = ref; return self
   func data( data: Variant ) -> SceneDescriptor: _data = data; return self
   # noded
+  func nullable( is_nullable: bool = true ) -> SceneDescriptor: _is_nullable = is_nullable; return self
   func rendered( is_rendered: bool = true ) -> SceneDescriptor: _is_rendered = is_rendered; return self
   func persistent( is_persistent: bool = true ) -> SceneDescriptor: _is_persistent = is_persistent; return self
 
 
 class SceneElement extends NodedElement:
-  func _init( scene: PackedScene, is_rendered: bool, parent: Element, is_portal: bool ) -> void:
-    super( scene.instantiate() if scene != null else null, is_rendered, parent, is_portal )
+  func _init( scene: PackedScene, is_nullable: bool, is_rendered: bool, parent: Element, is_portal: bool ) -> void:
+    super( scene.instantiate() if scene != null else null, is_nullable, is_rendered, parent, is_portal )
 
 
 # Nodes
@@ -1113,7 +1123,7 @@ class ContextElement extends FragmentElement:
 
   func _descriptor_updated( descriptor: Descriptor ) -> void:
     var next_descriptor: ContextDescriptor = self.descriptor
-    var next_value: Variant = next_descriptor._value if ! utils.is_ignore( next_descriptor._value ) else self.context_fallback # godot#72512
+    var next_value := next_descriptor._value if ! utils.is_ignore( next_descriptor._value ) else self.context_fallback
     var prev_value := self.context_value
     self.context_value = next_value
     if is_same( next_value, prev_value ) || self.context_users.is_empty(): super( descriptor ); return

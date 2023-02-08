@@ -27,5 +27,5 @@ func render( arg: rea.Arg ) -> rea.NodeDescriptor:
     .arg( arg )
     .prop( &'color', arg.props.get( &'color', self.default_color ) )
     .children( [ initial_nodes, arg.children ] )
-    .portals( [ rea.path( ^'label' ).prop( &'text', label ) ] )
+    .portals( [ rea.path( ^'label' ).nullable().prop( &'text', label ) ] )
   )
