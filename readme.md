@@ -37,8 +37,8 @@ Extend `rea.Component` and define an override for `render` method:
 ```gdscript
 extends rea.Component
 
-func render( arg: rea.Arg ) -> rea.NodeDescriptor:
-  return rea.node( self )
+func render(arg: rea.Arg) -> rea.NodeDescriptor:
+  return rea.node(self)
 ```
 
 `rea.Component` provides instance method `rerender`. And that's it.
@@ -52,13 +52,13 @@ Simply call [`rea.component.init`]((#reacomponentinit)) and [`rea.component.noti
 extends Whatever # Whatever has to be a Node subclass
 
 func _init() -> void:
-  rea.component.init( self, self.render )
+  rea.component.init(self, self.render)
 
-func _notification( what: int ) -> void:
-  rea.component.notify( self, what )
+func _notification(what: int) -> void:
+  rea.component.notify(self, what)
 
-func render( arg: rea.Arg ) -> rea.NodeDescriptor:
-  return rea.node( self )
+func render(arg: rea.Arg) -> rea.NodeDescriptor:
+  return rea.node(self)
 ```
 
 The render function does not have to be called `render`. 
@@ -67,15 +67,15 @@ It does not have to be a method, can be a lambda.
 ##### rea.component.init
 
 ```gdscript
-func init( node: Node, callable: Callable ) -> void
+func init(node: Node, callable: Callable) -> void
 ```
 
-Should be called in script's `_init` method. `callable` is of signature `( arg: rea.Arg ) -> rea.NodeDescriptor`.
+Should be called in script's `_init` method. `callable` is of signature `(arg: rea.Arg) -> rea.NodeDescriptor`.
 
 ##### rea.component.notify
 
 ```gdscript
-func notify( node: Node, what: int ) -> void
+func notify(node: Node, what: int) -> void
 ```
 
 Should be called in script's `_nofity` method.
@@ -83,7 +83,7 @@ Should be called in script's `_nofity` method.
 ##### rea.component.rerender
 
 ```gdscript
-func rerender( node: Node ) -> void
+func rerender(node: Node) -> void
 ```
 
 Triggers rerendering of `node`. Useful if a render function depends on changeable things which are outside of its scope.
@@ -117,7 +117,7 @@ This a base class for descriptors. Here are methods that can be called on all of
 ##### rea.Descriptor#tap
 
 ```gdscript
-func tap( tap: Callable )
+func tap(tap: Callable)
 ```
 
 Calls `tap` with the descriptor, a return value is ignored.  
@@ -125,7 +125,7 @@ Calls `tap` with the descriptor, a return value is ignored.
 ##### rea.Descriptor#arg
 
 ```gdscript
-func arg( arg: rea.Arg )
+func arg(arg: rea.Arg)
 ```
 
 Sets relevant attributes from `arg` on the descriptor.
@@ -133,7 +133,7 @@ Sets relevant attributes from `arg` on the descriptor.
 ##### rea.Descriptor#key
 
 ```gdscript
-func key( key: Variant )
+func key(key: Variant)
 ```
   
 Ensures that the descriptor updates are sent to the right element. Same as in React.
@@ -141,7 +141,7 @@ Ensures that the descriptor updates are sent to the right element. Same as in Re
 ##### rea.Descriptor#portals
 
 ```gdscript
-func portals( portals: Array[ rea.Descriptor ] )
+func portals(portals: Array[rea.Descriptor])
 ```
 
 Adds nested descriptors. They may describe nodes anywhere in an actual tree. 
@@ -153,7 +153,7 @@ This is a base class for descriptors that represent a single node.
 ##### rea.node
 
 ```gdscript
-func node( node: Node ) -> rea.NodeDescriptor
+func node(node: Node) -> rea.NodeDescriptor
 ```
 
 Describes a preexisting node.
@@ -161,7 +161,7 @@ Describes a preexisting node.
 ##### rea.path
 
 ```gdscript
-func path( path: NodePath, node: Node = null ) -> rea.PathDescriptor
+func path(path: NodePath, node: Node = null) -> rea.PathDescriptor
 ```
 
 Describes a preexisting node that is searched with `get_node` at mount of the descriptor. 
@@ -170,7 +170,7 @@ Describes a preexisting node that is searched with `get_node` at mount of the de
 ##### rea.type
 
 ```gdscript
-func type( type: Variant, script: GDScript = null ) -> rea.TypeDescriptor
+func type(type: Variant, script: GDScript = null) -> rea.TypeDescriptor
 ```
 
 Describes a new node created by calling constructor of `type`. 
@@ -180,7 +180,7 @@ To attach custom GDScript to a subtype of its parent class use `script`.
 ##### rea.scene
 
 ```gdscript
-func scene( scene: PackedScene ) -> rea.SceneDescriptor
+func scene(scene: PackedScene) -> rea.SceneDescriptor
 ```
 
 Describes a new node created by instantiating `scene`.
@@ -188,7 +188,7 @@ Describes a new node created by instantiating `scene`.
 ##### rea.NodedDescriptor#children
 
 ```gdscript
-func children( children: Array[ rea.Descriptor ] )
+func children(children: Array[rea.Descriptor])
 ```
 
 Adds nested descriptors. Nodes of the descriptors will be made children of the described node and moved approprietly.
@@ -196,7 +196,7 @@ Adds nested descriptors. Nodes of the descriptors will be made children of the d
 ##### rea.NodedDescriptor#hollow
 
 ```gdscript
-func hollow( is_hollow: bool = true )
+func hollow(is_hollow: bool = true)
 ```
 
 By default a node element is hollow, meaning it does not have described children and does not touches its actual children. 
@@ -207,9 +207,9 @@ To ensure that nothing will be touched `hollow()` can be called.
 ##### rea.NodedDescriptor#props
 
 ```gdscript
-func props( props: Dictionary )
-func prop( key: StringName, value: Variant )
-func propi( key: NodePath, value: Variant )
+func props(props: Dictionary)
+func prop(key: StringName, value: Variant)
+func propi(key: NodePath, value: Variant)
 ```
 
 Adds `props` to already set ones.  
@@ -224,8 +224,8 @@ If a key is `NodePath` then `set_indexed` will be used (and `get_indexed` for sa
 ##### rea.NodedDescriptor#binds
 
 ```gdscript
-func binds( signals: Dictionary )
-func bind( key: StringName, callable: Callable )
+func binds(signals: Dictionary)
+func bind(key: StringName, callable: Callable)
 ```
 
 Adds `signals` to already set ones. 
@@ -233,7 +233,7 @@ Adds `signals` to already set ones.
 ##### rea.NodedDescriptor#ref
 
 ```gdscript
-func ref( ref: Callable )
+func ref(ref: Callable)
 ```
 
 Calls `ref` with a node on mount and `null` on umnount.
@@ -241,7 +241,7 @@ Calls `ref` with a node on mount and `null` on umnount.
 ##### rea.NodedDescriptor#data
 
 ```gdscript
-func data( data: Variant )
+func data(data: Variant)
 ```
 
 Sets any `data` on `rea.Arg`. For custom logic in render functions.
@@ -249,7 +249,7 @@ Sets any `data` on `rea.Arg`. For custom logic in render functions.
 ##### rea.NodedDescriptor#nullable
 
 ```gdscript
-func nullable( is_nullable: bool = true )
+func nullable(is_nullable: bool = true)
 ```
 
 Allows silently skipping descriptors that describe optional nodes which are expected to be null in some cases.
@@ -257,7 +257,7 @@ Allows silently skipping descriptors that describe optional nodes which are expe
 ##### rea.NodedDescriptor#rendered
 
 ```gdscript
-func rendered( is_rendered: bool = true )
+func rendered(is_rendered: bool = true)
 ```
 
 If a described node is a Rea node component and you want to affect its render function - 
@@ -272,7 +272,7 @@ But nothing stops same node being used by multiple elements from same or differe
 ##### rea.NodedDescriptor#persistent
 
 ```gdscript
-func persistent( is_persistent: bool = true )
+func persistent(is_persistent: bool = true)
 ```
 
 By default any node described by a descriptor will be called `queue_free()` on when corresponding element unmounts. 
@@ -294,7 +294,7 @@ func nodes() -> rea.NodesDescriptor
 ##### rea.NodesDescriptor#persistent
 
 ```gdscript
-func persistent( is_persistent: bool = true )
+func persistent(is_persistent: bool = true)
 ```
 
 Marks nodes as independent in lifecycle from the descriptor. Same as [for node](#reanodeddescriptorpersistent).
@@ -302,7 +302,7 @@ Marks nodes as independent in lifecycle from the descriptor. Same as [for node](
 ##### rea.NodesDescriptor#nodes
 
 ```gdscript
-func nodes( nodes: Array[ Node ] )
+func nodes(nodes: Array[Node])
 ```
 
 Sets nodes of the descriptor.
@@ -314,10 +314,10 @@ Describes usage of a pure functional component. It has all of [`rea.NodedDescrip
 ##### rea.callable
 
 ```gdscript
-func callable( callable: Callable ) -> rea.CallableDescriptor
+func callable(callable: Callable) -> rea.CallableDescriptor
 ```
 
-`callable` is of signature `( arg: rea.Arg ) -> rea.Descriptor`. 
+`callable` is of signature `(arg: rea.Arg) -> rea.Descriptor`. 
 
 #### rea.FragmentDescriptor
 
@@ -340,7 +340,7 @@ Context identifier is a custom class that has static function `get_fallback` ret
 ##### rea.context
 
 ```gdscript
-func context( context: GDScript, value: Variant ) -> rea.ContextDescriptor
+func context(context: GDScript, value: Variant) -> rea.ContextDescriptor
 ```
 
 To use a default value of context pass [`rea.ignore`](#reaignore) as a value.
@@ -353,11 +353,11 @@ So comments here are mostly about differences from original ones.
 #### rea.use.state
 
 ```gdscript
-func state( initial_value: Variant ) -> rea.use.State
+func state(initial_value: Variant) -> rea.use.State
 
 class State extends RefCounted:
   value: Variant
-  update: Callable # func( value: Variant ) -> void
+  update: Callable # func(value: Variant) -> void
 ```
 
 There is no destructuring or tuples in Godot so an object is returned.  
@@ -368,7 +368,7 @@ This is not a reference, new state object will be created for each update.
 #### rea.use.effect
 
 ```gdscript
-func effect( update: Callable, deps: Array = [] ) -> void
+func effect(update: Callable, deps: Array = []) -> void
 ```
 
 No immediate effect analog implemented yet, only this one, deferred.
@@ -376,7 +376,7 @@ No immediate effect analog implemented yet, only this one, deferred.
 #### rea.use.context
 
 ```gdscript
-func context( context: GDScript ) -> Variant
+func context(context: GDScript) -> Variant
 ```
 
 `context` is both an identifier and a default value provider.
@@ -384,11 +384,11 @@ func context( context: GDScript ) -> Variant
 #### rea.use.reducer
 
 ```gdscript
-func reducer( reducer: Callable, initial_value: Variant, init: Callable = Callable() ) -> rea.use.Reducer
+func reducer(reducer: Callable, initial_value: Variant, init: Callable = Callable()) -> rea.use.Reducer
 
 class Reducer extends RefCounted:
   value: Variant
-  update: Callable # func( action: Variant ) -> void
+  update: Callable # func(action: Variant) -> void
 ```
 
 Same as in `state` hook returns an object with `value` and `update`. 
@@ -396,19 +396,19 @@ Same as in `state` hook returns an object with `value` and `update`.
 #### rea.use.callback
 
 ```gdscript
-func callback( callback: Callable, deps: Array = [] ) -> Callable
+func callback(callback: Callable, deps: Array = []) -> Callable
 ```
 
 #### rea.use.memo
 
 ```gdscript
-func memo( producer: Callable, deps: Array = [] ) -> Variant
+func memo(producer: Callable, deps: Array = []) -> Variant
 ```
 
 #### rea.use.ref
 
 ```gdscript
-func ref( initial_value: Variant = null ) -> rea.use.Ref
+func ref(initial_value: Variant = null) -> rea.use.Ref
 ```
 
 Returns object with mutable `current` property and `update` method that sets said property.  
@@ -436,7 +436,7 @@ Empty `Callable()`, nothing more.
 #### rea.is_ignore
 
 ```gdscript
-func is_ignore( value: Variant ) -> bool
+func is_ignore(value: Variant) -> bool
 ```
 
 Checks if `value` is a [`rea.ignore`](#reaignore).
@@ -444,7 +444,7 @@ Checks if `value` is a [`rea.ignore`](#reaignore).
 #### rea.apply
 
 ```gdscript
-func apply( element: NodeElement, descriptor: NodeDescriptor ) -> NodeElement
+func apply(element: NodeElement, descriptor: NodeDescriptor) -> NodeElement
 ```
 
 To mount an element - call `apply(null, descriptor)` and save returned element.
